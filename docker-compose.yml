@@ -1,0 +1,51 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres:15
+    ports:
+      - 5432:5432
+    environment:
+        POSTGRES_USER: ${DATABASE_USERNAME}
+        POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+        POSTGRES_DB: ${DATABASE_NAME}
+    volumes:
+      - db-data:/var/lib/postgresql/data:rw
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  cms:
+    build:
+      context: ./cms
+    restart: unless-stopped
+    environment:
+      HOST: '0.0.0.0'
+      PORT: '1337'
+      NODE_ENV: 'development'
+      DATABASE_CLIENT: 'postgres'
+      DATABASE_HOST: 'postgres'
+      DATABASE_PORT: '5432'
+      DATABASE_NAME: ${DATABASE_NAME}
+      DATABASE_USERNAME: ${DATABASE_USERNAME}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      DATABASE_SCHEMA: 'strapi'
+      DATABASE_SSL: 'false'
+      APP_KEYS: 'djNVDzG1dFuSfbPZXbuVZw==,cy2eVgIIcVlkJsIlcCSJ7g==,quUyvwDn5TiNXaEO1+Q0Qg==,gbByB6bwIcEobQrI3Vs05A=='
+      API_TOKEN_SALT: 'VejfssZpwYejfS6dZUC40A=='
+      ADMIN_JWT_SECRET: 'NvRulXMvP7woK8M38UnZkQ=='
+      JWT_SECRET: 'DU3xaYZQl6VxTqNI96KUkA=='
+      TRANSFER_TOKEN_SALT: 'LrAdUO4mVzf3VCL9JboHtQ=='
+    volumes:
+      - ./cms/config:/opt/app/config
+      - ./cms/src:/opt/app/src
+      - ./cms/package.json:/opt/app/package.json
+      - ./cms/yarn.lock:/opt/app/yarn.lock
+      - ./cms/.env:/opt/app/.env
+      - ./cms/public/uploads:/opt/app/public/uploads
+    ports:
+      - 1337:1337
+    depends_on:
+      - postgres
+
+
+volumes:
+  db-data:
