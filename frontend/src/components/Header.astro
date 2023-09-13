@@ -1,0 +1,21 @@
+---
+import Logo from './Logo.astro'
+---
+
+<style>
+  .container {
+    padding: 1rem;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: end;
+    gap: 1rem;
+  }
+</style>
+
+<div class="container">
+  <a href="/" style="flex-grow: 1">
+    <Logo />
+  </a>
+  <a href="/search">Search</a>
+</div>
