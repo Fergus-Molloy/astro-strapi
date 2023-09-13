@@ -1,8 +1,7 @@
 interface Props {
-  endpoint: string;
-  query?: Record<string, string>;
-  wrappedByKey?: string;
-  wrappedByList?: boolean;
+    query?: Record<string, string>;
+    wrappedByKey?: string;
+    wrappedByList?: boolean;
 }
 
 /**
@@ -13,33 +12,41 @@ interface Props {
  * @param wrappedByList - If the response is a list, unwrap it
  * @returns
  */
-export default async function fetchApi<T>({
-  endpoint,
-  query,
-  wrappedByKey,
-  wrappedByList,
-}: Props): Promise<T> {
-  if (endpoint.startsWith("/")) {
-    endpoint = endpoint.slice(1);
-  }
+export default async function fetchApi<T>(endpoint: string,
+    {
+        query,
+        wrappedByKey,
+        wrappedByList,
+    }: Props = {}): Promise<T> {
 
-  const url = new URL(`${import.meta.env.STRAPI_URL}/api/${endpoint}`);
+    if (endpoint.startsWith("/")) {
+        endpoint = endpoint.slice(1);
+    }
 
-  if (query) {
-    Object.entries(query).forEach(([key, value]) => {
-      url.searchParams.append(key, value);
-    });
-  }
-  const res = await fetch(url.toString());
-  let data = await res.json();
+    const url = new URL(`${import.meta.env.STRAPI_URL}/api/${endpoint}`);
 
-  if (wrappedByKey) {
-    data = data[wrappedByKey];
-  }
+    if (query) {
+        Object.entries(query).forEach(([key, value]) => {
+            url.searchParams.append(key, value);
+        });
+    }
+    const token = import.meta.env.STRAPI_TOKEN;
+    const res = !token
+        ? await fetch(url.toString())
+        : await fetch(url.toString(), { headers: { Authorization: "Bearer " + token } });
 
-  if (wrappedByList) {
-    data = data[0];
-  }
+    let data = await res.json();
+    console.log("Response data: " + JSON.stringify(data));
 
-  return data as T;
+    if (wrappedByKey) {
+        data = data[wrappedByKey];
+        console.log("Unwrapped by key `" + wrappedByKey + "`: " + JSON.stringify(data));
+    }
+
+    if (wrappedByList) {
+        data = data[0];
+        console.log("Unwrapped by list: " + JSON.stringify(data));
+    }
+
+    return data as T;
 }

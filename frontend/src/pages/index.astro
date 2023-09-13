@@ -1,7 +1,27 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
+import fetchApi from '../lib/strapi'
+import type Recipe from '../interfaces/recipe'
+
+const recipes = await fetchApi<Recipe[]>('recipes', { wrappedByKey: "data" })
 ---
+<style>
+.container {
+    width: 100%;
+    padding: 4px;
+}
+
+</style>
 
 <BaseLayout pageTitle="Home">
+    <div class="container">
   <h1>Astro</h1>
+  <ul>
+    {recipes.map((recipe) => (
+        <li>
+            <a href={`/recipe/${recipe.attributes.slug}`}>{recipe.attributes.title}</a>
+        </li>
+    ))}
+  </ul>
+    </div>
 </BaseLayout>

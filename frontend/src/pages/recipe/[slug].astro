@@ -1,0 +1,23 @@
+---
+import { marked } from 'marked'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import fetchApi from '../../lib/strapi'
+import type Recipe from '../../interfaces/recipe'
+
+export async function getStaticPaths() {
+  const recipes = await fetchApi<Recipe[]>('recipes', { wrappedByKey: 'data' })
+  return recipes.map((recipe) => ({
+    params: { slug: recipe.attributes.slug },
+    props: recipe,
+  }))
+}
+type Props = Recipe
+
+const recipe = Astro.props
+const content = marked.parse(recipe.attributes.content)
+---
+
+<BaseLayout>
+  <h1>{recipe.attributes.title}</h1>
+  <article set:html={content} />
+</BaseLayout>
